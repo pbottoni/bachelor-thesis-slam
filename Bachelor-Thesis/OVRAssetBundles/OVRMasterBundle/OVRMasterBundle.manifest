@@ -1,0 +1,10 @@
+ManifestFileVersion: 0
+CRC: 2730431491
+AssetBundleManifest:
+  AssetBundleInfos:
+    Info_0:
+      Name: asset_resources
+      Dependencies: {}
+    Info_1:
+      Name: scene_oculus_try
+      Dependencies: {}

@@ -78,6 +78,7 @@ public class RsPoseStreamTransformer : MonoBehaviour
                 {
                     frame.CopyTo(pose);
 
+
                     // Convert T265 coordinate system to Unity's
                     // see https://realsense.intel.com/how-to-getting-imu-data-from-d435i-and-t265/
 

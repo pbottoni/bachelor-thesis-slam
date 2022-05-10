@@ -1,10 +1,14 @@
 ﻿using Intel.RealSense;
 using System;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.Events;
+using System.Runtime.InteropServices;
+using System.Drawing;
+
 
 public class RsStreamTextureRenderer : MonoBehaviour
 {
@@ -62,7 +66,7 @@ public class RsStreamTextureRenderer : MonoBehaviour
     [System.Serializable]
     public class TextureEvent : UnityEvent<Texture> { }
 
-    public Stream _stream;
+    public Intel.RealSense.Stream _stream;
     public Format _format;
     public int _streamIndex;
 
@@ -178,10 +182,10 @@ public class RsStreamTextureRenderer : MonoBehaviour
             {
                 Destroy(texture);
             }
-
+            int index;
             using (var p = frame.Profile) {
-                bool linear = (QualitySettings.activeColorSpace != ColorSpace.Linear)
-                    || (p.Stream != Stream.Color && p.Stream != Stream.Infrared);
+                index = p.Index;
+                bool linear = (QualitySettings.activeColorSpace != ColorSpace.Linear) || (p.Stream != Intel.RealSense.Stream.Color && p.Stream != Intel.RealSense.Stream.Infrared);
                 texture = new Texture2D(frame.Width, frame.Height, Convert(p.Format), false, linear)
                 {
                     wrapMode = TextureWrapMode.Clamp,
@@ -191,8 +195,32 @@ public class RsStreamTextureRenderer : MonoBehaviour
 
             textureBinding.Invoke(texture);
         }
-
+        print("hello world from textureRenderer");
         texture.LoadRawTextureData(frame.Data, frame.Stride * frame.Height);
+        int width = texture.width;
+        int height = texture.height;
+        for( int i = 0; i < width; i++)
+        {
+            for(int j = 0; j < height; j++)
+            {
+                var pi_old = texture.GetPixels(i, j, 1, 1);
+                print(pi_old);
+                pi_old[0][0] = 1 - pi_old[0][0];
+                pi_old[0][1] = 1 - pi_old[0][1];
+                pi_old[0][2] = 1 - pi_old[0][2];
+                print(pi_old);
+                texture.SetPixels(i, j, 1, 1,pi_old);
+            }
+        }
+
+        print(texture.GetPixels(0,0,1,1)[0]);
+        byte[] imag = texture.EncodeToPNG();
+
+        
+        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", imag);
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
+        
+
         texture.Apply();
     }
 }

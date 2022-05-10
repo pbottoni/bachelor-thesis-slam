@@ -172,7 +172,9 @@ public class RsDevice : RsFrameProvider
         FrameSet frames;
         if (m_pipeline.PollForFrames(out frames))
         {
+            //print("hello");
             using (frames)
+                //VideoFrame image = frames.
                 RaiseSampleEvent(frames);
         }
     }

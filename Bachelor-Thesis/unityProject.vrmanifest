@@ -1,0 +1,16 @@
+{
+  "source": "Unity",
+  "applications": [
+    {
+      "app_key": "application.generated.unity.bachelorthesis.exe",
+      "launch_type": "url",
+      "url": "steam://launch/",
+      "action_manifest_path": "C:\\Users\\pbottoni\\Documents\\GitHub\\bachelor-thesis-slam\\Bachelor-Thesis\\Assets\\StreamingAssets\\SteamVR\\actions.json",
+      "strings": {
+        "en_us": {
+          "name": "Bachelor-Thesis [Testing]"
+        }
+      }
+    }
+  ]
+}

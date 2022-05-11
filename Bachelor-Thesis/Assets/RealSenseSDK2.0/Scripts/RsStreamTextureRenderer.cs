@@ -8,6 +8,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using System.Runtime.InteropServices;
 using System.Drawing;
+using System.Linq;
 
 
 public class RsStreamTextureRenderer : MonoBehaviour
@@ -74,6 +75,11 @@ public class RsStreamTextureRenderer : MonoBehaviour
 
     protected Texture2D texture;
 
+    public int amound_of_images=0;
+    public List<string> images_names = new List<string>();
+    public List<int> _width = new List<int>();
+    public List<int> _height = new List<int>();
+    
 
     [Space]
     public TextureEvent textureBinding;
@@ -109,6 +115,7 @@ public class RsStreamTextureRenderer : MonoBehaviour
             q.Dispose();
             q = null;
         }
+        formate();
     }
 
     public void OnStartStreaming(PipelineProfile activeProfile)
@@ -188,39 +195,87 @@ public class RsStreamTextureRenderer : MonoBehaviour
                 bool linear = (QualitySettings.activeColorSpace != ColorSpace.Linear) || (p.Stream != Intel.RealSense.Stream.Color && p.Stream != Intel.RealSense.Stream.Infrared);
                 texture = new Texture2D(frame.Width, frame.Height, Convert(p.Format), false, linear)
                 {
-                    wrapMode = TextureWrapMode.Clamp,
-                    filterMode = filterMode
+                    //wrapMode = TextureWrapMode.Clamp,
+                   // filterMode = filterMode
                 };
             }
 
             textureBinding.Invoke(texture);
         }
-        print("hello world from textureRenderer");
+       // print("hello world from textureRenderer");
         texture.LoadRawTextureData(frame.Data, frame.Stride * frame.Height);
         int width = texture.width;
         int height = texture.height;
-        for( int i = 0; i < width; i++)
-        {
-            for(int j = 0; j < height; j++)
-            {
-                var pi_old = texture.GetPixels(i, j, 1, 1);
-                print(pi_old);
-                pi_old[0][0] = 1 - pi_old[0][0];
-                pi_old[0][1] = 1 - pi_old[0][1];
-                pi_old[0][2] = 1 - pi_old[0][2];
-                print(pi_old);
-                texture.SetPixels(i, j, 1, 1,pi_old);
-            }
-        }
-
-        print(texture.GetPixels(0,0,1,1)[0]);
+       
+        /*print(texture.dimension);
+        UnityEngine.Color[] pixels = texture.GetPixels();
+        Array.Reverse(pixels);
+        for (int row = 0; row < height; ++row)
+            Array.Reverse(pixels, row * width, width);
+        texture.SetPixels(pixels);*/
+        texture.Apply();
         byte[] imag = texture.EncodeToPNG();
 
         
         File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", imag);
+        images_names.Add(_streamIndex.ToString() + "_" + Time.time.ToString() + ".png");
         //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
+        print(images_names.Last());
+        amound_of_images += 1;
+        _height.Add(height);
+        _width.Add(width);
         
+    }
 
-        texture.Apply();
+    public void formate()
+    {
+        print(images_names);
+        Texture2D tex = null;
+        byte[] data;
+        byte[] imag;
+        string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/";
+
+        for (int i=0;i< amound_of_images; i++)
+        {
+            print("Start convert");
+            print(images_names[i]);
+            print(_height[i]);
+            print(_width[i]);
+
+            data = File.ReadAllBytes(filePath + images_names[i]);
+            tex = new Texture2D(_width[i],_height[i]);
+            tex.LoadImage(data);
+            UnityEngine.Color[] pixels = tex.GetPixels();
+            Array.Reverse(pixels);
+            for (int row = 0; row < _height[i]; ++row)
+                Array.Reverse(pixels, row * _width[i], _width[i]);
+            
+          
+      
+            for (int k = 0; k < _width[i]; k++)
+            {
+                for (int j = 0; j < _height[i]; j++)
+                {
+                    //print(pixels[k * _height[i] + j])
+                    //System.Drawing.Color myColor = pixels[k * _height[i] + j];
+                    //print(pixels[k * _height[i] + j]);
+                    //pixels[k * _height[i] + j] = InvertColor(pixels[k * _height[i] + j]);
+                    pixels[k * _height[i] + j][3] = 1 - pixels[k * _height[i] + j][3];
+                    //print(pixels[k * _height[i] + j]);
+                }
+            }
+           
+            tex.SetPixels(pixels);
+            tex.Apply();
+            imag = tex.EncodeToPNG();
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/" + images_names[i], imag);
+        }
+        
+    }
+
+    public UnityEngine.Color InvertColor(UnityEngine.Color color) {
+        var maxColor = color.maxColorComponent;
+        var mycolor =new UnityEngine.Color(color[0],color[1], color[2], 1-color[3]);
+     return mycolor;
     }
 }

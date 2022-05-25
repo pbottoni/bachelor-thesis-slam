@@ -7,7 +7,7 @@ public class PoseExtractorOculus : MonoBehaviour
 {
     GameObject centerEye;
     Vector3 headsetPos;
-    Vector3 headsetRot;
+    Quaternion headsetRot;
     string filename = "";
    
 
@@ -26,13 +26,13 @@ public class PoseExtractorOculus : MonoBehaviour
     void Update()
     {
         headsetPos = centerEye.transform.position;
-        headsetRot = centerEye.transform.eulerAngles;
-    
-        for(int i =0; i < 3; i++)
+        headsetRot = centerEye.transform.rotation;
+
+        for (int i =0; i < 3; i++)
         {
             static_.Add(headsetPos[i]);
         }
-        for (int i = 0; i < 3; i++)
+        for (int i = 0; i < 4; i++)
         {
             static_.Add(headsetRot[i]);
         }
@@ -51,15 +51,15 @@ public class PoseExtractorOculus : MonoBehaviour
         if (static_.Count > 0)
         {
             TextWriter tw = new StreamWriter(filename, false);
-            tw.WriteLine("Stream Type, x,y,z,rx,ry,rz");
+            tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
             tw.Close();
 
 
             tw = new StreamWriter(filename, true);
-            for(int i = 0; i < static_.Count/6; i++)
+            for(int i = 0; i < static_.Count/7; i++)
             {
-                tw.WriteLine("Pose,"+static_[i * 6] + "," + static_[i * 6 + 1] + "," + static_[i * 6 + 2] + "," +
-                    static_[i * 6 + 3] + "," + static_[i * 6 + 4] + "," + static_[i * 6 + 5]);
+                tw.WriteLine("Pose," + static_[i * 7] + "," + static_[i * 7 + 1] + "," + static_[i * 7 + 2] + "," +
+                    static_[i * 7 + 3] + "," + static_[i * 7 + 4] + "," + static_[i * 7 + 5] + "," + static_[i * 7 + 6]);
            
             }
             tw.Close();

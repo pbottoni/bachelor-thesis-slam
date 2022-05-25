@@ -63,6 +63,20 @@ public class RsStreamTextureRenderer : MonoBehaviour
         }
     }
 
+    [StructLayout(LayoutKind.Sequential)]
+    public class RsPose
+    {
+        public Vector3 translation;
+        public Vector3 velocity;
+        public Vector3 acceleration;
+        public Quaternion rotation;
+        public Vector3 angular_velocity;
+        public Vector3 angular_acceleration;
+        public int tracker_confidence;
+        public int mapper_confidence;
+    }
+    RsPose pose = new RsPose();
+
     public RsFrameProvider Source;
 
     [System.Serializable]
@@ -76,16 +90,20 @@ public class RsStreamTextureRenderer : MonoBehaviour
 
     protected Texture2D texture;
 
+    int frameRate = 25;
+
     public int amound_of_images=0;
-    public List<string> images_names = new List<string>();
+    public static List<string> images_names = new List<string>();
     public List<int> _width = new List<int>();
     public List<int> _height = new List<int>();
-
+    public List<double> imu_ = new List<double>();
+    public List<Texture2D> tex_ = new List<Texture2D>();
     public string time_name = "";
+    public string lOrR = "";
 
-
-    public string filename = "";
-
+    public string fileIMG = "";
+    public string fileIMU = "";
+    public string fileTIME = "";
     [Space]
     public TextureEvent textureBinding;
 
@@ -96,9 +114,22 @@ public class RsStreamTextureRenderer : MonoBehaviour
     {
         Source.OnStart += OnStartStreaming;
         Source.OnStop += OnStopStreaming;
-        time_name= System.DateTime.Now.ToString("yyyyMMdd_hhmmss");
-        Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images_" + time_name);
-        filename="C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images_" + time_name + "/" + time_name + ".txt";
+        Time.captureFramerate = frameRate;
+        if (_streamIndex == 2)
+        {
+            lOrR = "right";
+        }
+        else
+        {
+            lOrR = "left";
+        }
+        
+        time_name= System.DateTime.Now.ToString("yyyyMMdd_hhmm");
+        Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name+"/"+lOrR+"/data");
+        //Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/IMU");
+        fileIMG = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR+"/data.csv";
+        //fileIMU = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/IMU/data.csv";
+        fileTIME = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/timestamp.txt";
     }
 
     void OnDestroy()
@@ -186,11 +217,28 @@ public class RsStreamTextureRenderer : MonoBehaviour
             if (q.PollForFrame<VideoFrame>(out frame))
                 using (frame)
                     ProcessFrame(frame);
+
+           /* PoseFrame frame2;
+            if (q.PollForFrame<PoseFrame>(out frame2))
+                using (frame2)
+                {
+                    frame2.CopyTo(pose);
+                    for (int i = 0; i < 3; i++)
+                    {
+                        imu_.Add(pose.angular_acceleration[i]);
+                    }
+
+                    for (int i = 0; i < 3; i++)
+                    {
+                        imu_.Add(pose.acceleration[i]);
+                    }
+                }*/
         }
     }
 
     private void ProcessFrame(VideoFrame frame)
     {
+        Time.captureFramerate = frameRate;
         if (HasTextureConflict(frame))
         {
             if (texture != null)
@@ -203,18 +251,15 @@ public class RsStreamTextureRenderer : MonoBehaviour
                 bool linear = (QualitySettings.activeColorSpace != ColorSpace.Linear) || (p.Stream != Intel.RealSense.Stream.Color && p.Stream != Intel.RealSense.Stream.Infrared);
                 texture = new Texture2D(frame.Width, frame.Height, Convert(p.Format), false, linear)
                 {
-                    //wrapMode = TextureWrapMode.Clamp,
-                   // filterMode = filterMode
+                    wrapMode = TextureWrapMode.Clamp,
+                   filterMode = filterMode
                 };
             }
 
             textureBinding.Invoke(texture);
         }
        // print("hello world from textureRenderer");
-        texture.LoadRawTextureData(frame.Data, frame.Stride * frame.Height);
-        int width = texture.width;
-        int height = texture.height;
-       
+        texture.LoadRawTextureData(frame.Data, frame.Stride * frame.Height);      
         /*print(texture.dimension);
         UnityEngine.Color[] pixels = texture.GetPixels();
         Array.Reverse(pixels);
@@ -222,14 +267,32 @@ public class RsStreamTextureRenderer : MonoBehaviour
             Array.Reverse(pixels, row * width, width);
         texture.SetPixels(pixels);*/
         texture.Apply();
-        byte[] imag = texture.EncodeToPNG();
-
+        Texture2D copyTexture = new Texture2D(texture.width, texture.height);
+        copyTexture.SetPixels(texture.GetPixels());
+        copyTexture.Apply();
+        tex_.Add(copyTexture);
+        //byte[] imag = texture.EncodeToPNG();
+       // print(frame.DataSize);
+        //print(texture);
+       // byte[] arr = new byte[frame.DataSize];
+        //Marshal.Copy(frame.Data, arr, 0, frame.DataSize);
+        //byte[] imag = ImageConversion.EncodeArrayToPNG(arr, texture.graphicsFormat, (uint)frame.Width, (uint)frame.Height);
+            
+        //ImageDescription info = new ImageDescription(frame.Width, frame.Height, frame.Stride, frame.Width, frame.Height, TextureFormat.Alpha8, frame.DataSize);
         
-        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", imag);
-        images_names.Add(_streamIndex.ToString() + "_" + Time.time.ToString() + ".png");
+        
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png", imag);
+       
+
+        if (_streamIndex == 1)
+        {
+            images_names.Add(_streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png");
+        }
         //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
-        print(images_names.Last());
+        //print(images_names.Last());
         amound_of_images += 1;
+        int width = texture.width;
+        int height = texture.height;
         _height.Add(height);
         _width.Add(width);
         
@@ -242,24 +305,39 @@ public class RsStreamTextureRenderer : MonoBehaviour
         byte[] data;
         byte[] imag;
         string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/";
-        File.WriteAllLines(filename, images_names, Encoding.UTF8);
+
+        StreamWriter writer = new StreamWriter(fileIMG, true);
+        StreamWriter writer_timestamp = new StreamWriter(fileTIME, true);
+       
+        writer.Write("#timestamp [ns],filename\n");
+
         for (int i=0;i< amound_of_images; i++)
         {
             print("Start convert");
             print(images_names[i]);
             print(_height[i]);
             print(_width[i]);
+            string img = images_names[i];
+            //imag = tex_[i].EncodeToPNG();
+            
+            //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" +img , imag);
 
-            data = File.ReadAllBytes(filePath + images_names[i]);
-            tex = new Texture2D(_width[i],_height[i]);
-            tex.LoadImage(data);
-            UnityEngine.Color[] pixels = tex.GetPixels();
+
+           
+            //data = File.ReadAllBytes(filePath + img);
+            //print(data.Length);
+            
+            //tex = new Texture2D(_width[i],_height[i]);
+            //tex.LoadImage(data);
+            UnityEngine.Color[] pixels = tex_[i].GetPixels();
             Array.Reverse(pixels);
             for (int row = 0; row < _height[i]; ++row)
                 Array.Reverse(pixels, row * _width[i], _width[i]);
-            
-          
-      
+            if (_streamIndex == 1)
+            {
+                writer_timestamp.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "\n");
+            }
+            writer.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "," + img.Remove(0, 2) + "\n");
             for (int k = 0; k < _width[i]; k++)
             {
                 for (int j = 0; j < _height[i]; j++)
@@ -268,18 +346,45 @@ public class RsStreamTextureRenderer : MonoBehaviour
                     //System.Drawing.Color myColor = pixels[k * _height[i] + j];
                     //print(pixels[k * _height[i] + j]);
                     //pixels[k * _height[i] + j] = InvertColor(pixels[k * _height[i] + j]);
-                    pixels[k * _height[i] + j][3] = 1 - pixels[k * _height[i] + j][3];
+                    
+                    float alpha = pixels[k * _height[i] + j][3];
+                    pixels[k * _height[i] + j][0] = alpha;
+                    pixels[k * _height[i] + j][1] = alpha;
+                    pixels[k * _height[i] + j][2] = alpha;
+                    pixels[k * _height[i] + j][3] = 1;
                     //print(pixels[k * _height[i] + j]);
                 }
             }
-           
-            tex.SetPixels(pixels);
-            tex.Apply();
-            imag = tex.EncodeToPNG();
+            //print(pixels[5 * _height[50] + 80][0]);
 
-            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images_" + time_name + "/" + images_names[i], imag);
+
+            tex_[i].SetPixels(pixels);
+            tex_[i].Apply();
+            imag = tex_[i].EncodeToPNG();
+
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/"+ lOrR+"/data/" + images_names[i].Remove(0, 2), imag);
         }
         
+        writer.Close();
+        writer_timestamp.Close();
+
+       /* if (imu_.Count > 0 && _streamIndex == 1)
+        {
+            TextWriter tw = new System.IO.StreamWriter(fileIMU, false);
+            tw.Write("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS_S_z [rad s^-1],a_RS_S_x [m s^-2],a_RS_S_y [m s^-2],a_RS_S_z [m s^-2] \n");
+            tw.Close();
+
+
+            tw = new StreamWriter(fileIMU, true);
+            for (int i = 0; i < imu_.Count / 6; i++)
+            {
+                string img = images_names[i];
+                tw.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + ","+imu_[i * 6] + "," + imu_[i * 6 + 1] + "," + imu_[i * 6 + 2] + "," +
+                    imu_[i * 6 + 3] + "," + imu_[i * 6 + 4] + "," + imu_[i * 6 + 5]+"\n");
+
+            }
+            tw.Close();
+        }*/
     }
 
     public UnityEngine.Color InvertColor(UnityEngine.Color color) {

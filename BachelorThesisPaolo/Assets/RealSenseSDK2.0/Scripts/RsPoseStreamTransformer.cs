@@ -134,20 +134,30 @@ public class RsPoseStreamTransformer : MonoBehaviour
             {
                 if (i != 0)
                 {
-                    tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 4) + static_[(i - 1) * 7]) + "2500," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 4 + static_[(i - 1) * 7 + 1]) + ","
-                        + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 4 + static_[(i - 1) * 7 + 2]) + "," +
-                    ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 4 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 4 + static_[(i - 1) * 7 + 4]) +
-                    "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 4 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 4 + static_[(i - 1) * 7 + 6]));
+                    /* tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 4) + static_[(i - 1) * 7]) + "2500," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 4 + static_[(i - 1) * 7 + 1]) + ","
+                         + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 4 + static_[(i - 1) * 7 + 2]) + "," +
+                     ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 4 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 4 + static_[(i - 1) * 7 + 4]) +
+                     "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 4 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 4 + static_[(i - 1) * 7 + 6]));
 
-                    tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 2) + static_[(i - 1) * 7]) + "5000," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 2 + static_[(i - 1) * 7 + 1]) + ","
-                        + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 2 + static_[(i - 1) * 7 + 2]) + "," +
-                    ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 2 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 2 + static_[(i - 1) * 7 + 4]) +
-                    "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 2 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 2 + static_[(i - 1) * 7 + 6]));
+                     tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 2) + static_[(i - 1) * 7]) + "5000," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 2 + static_[(i - 1) * 7 + 1]) + ","
+                         + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 2 + static_[(i - 1) * 7 + 2]) + "," +
+                     ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 2 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 2 + static_[(i - 1) * 7 + 4]) +
+                     "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 2 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 2 + static_[(i - 1) * 7 + 6]));
 
-                    tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 4)*3 + static_[(i - 1) * 7]) + "7500," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 4 *3 + static_[(i - 1) * 7 + 1]) + ","
-                         + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 4 * 3 + static_[(i - 1) * 7 + 2]) + "," +
-                     ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 4 * 3 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 4 * 3+ static_[(i - 1) * 7 + 4]) +
-                     "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 4 * 3 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 4 * 3 + static_[(i - 1) * 7 + 6]));
+                     tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / 4)*3 + static_[(i - 1) * 7]) + "7500," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / 4 *3 + static_[(i - 1) * 7 + 1]) + ","
+                          + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / 4 * 3 + static_[(i - 1) * 7 + 2]) + "," +
+                      ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / 4 * 3 + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / 4 * 3+ static_[(i - 1) * 7 + 4]) +
+                      "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / 4 * 3 + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / 4 * 3 + static_[(i - 1) * 7 + 6]));
+                 */
+                    int interpolate = 5;
+                   for(int j = 1; j < interpolate; j++)
+                    {
+                        tw.WriteLine(((int)((static_[i * 7] - static_[(i - 1) * 7]) / interpolate) * j + static_[(i - 1) * 7]) + ""+10000/interpolate *j +"," + ((static_[i * 7 + 1] - static_[(i - 1) * 7 + 1]) / interpolate * j + static_[(i - 1) * 7 + 1]) + ","
+                       + ((static_[i * 7 + 2] - static_[(i - 1) * 7 + 2]) / interpolate * j + static_[(i - 1) * 7 + 2]) + "," +
+                   ((static_[i * 7 + 3] - static_[(i - 1) * 7 + 3]) / interpolate * j + static_[(i - 1) * 7 + 3]) + "," + ((static_[i * 7 + 4] - static_[(i - 1) * 7 + 4]) / interpolate * j + static_[(i - 1) * 7 + 4]) +
+                   "," + ((static_[i * 7 + 5] + static_[(i - 1) * 7 + 5]) / interpolate * j + static_[(i - 1) * 7 + 5]) + "," + ((static_[i * 7 + 6] - static_[(i - 1) * 7 + 6]) / interpolate * j + static_[(i - 1) * 7 + 6]));
+
+                    }
                 }
 
                 tw.WriteLine(static_[i * 7] + "0000," + static_[i * 7 + 1] + "," + static_[i * 7 + 2] + "," +

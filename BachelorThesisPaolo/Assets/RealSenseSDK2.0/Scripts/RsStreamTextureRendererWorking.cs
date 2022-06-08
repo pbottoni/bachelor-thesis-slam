@@ -7,14 +7,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using UnityEngine;
 using UnityEngine.Events;
-using Unity.Collections;
 using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using Unity.Collections;
 
 
-public class RsStreamTextureRenderer2 : MonoBehaviour
+public class RsStreamTextureRendererWorking : MonoBehaviour
 {
     private static TextureFormat Convert(Format lrsFormat)
     {
@@ -95,26 +95,18 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
 
     public int amound_of_images = 0;
-    public int amound_of_images_r = 0;
-    public int amound_of_images_l = 0;
-    //public static List<string> images_names_r = new List<string>();
-    //public static List<string> images_names_l = new List<string>();
-    //public List<uint> _width = new List<uint>();
-    //public List<uint> _height = new List<uint>();
-    //public List<double> imu_ = new List<double>();
-    
-    //public List<Texture2D> tex_ = new List<Texture2D>();
+    public static List<string> images_names = new List<string>();
+    public List<int> _width = new List<int>();
+    public List<int> _height = new List<int>();
+    public List<double> imu_ = new List<double>();
+    public List<Texture2D> tex_ = new List<Texture2D>();
+
     public string time_name = "";
     public string lOrR = "";
-    
-    public double prev_time_l = 0;
-    public double prev_time_r = 0;
 
     public string fileIMG = "";
     public string fileIMU = "";
     public string fileTIME = "";
-    public string fileTimeNames_l = "";
-    public string fileTimeNames_r = "";
     [Space]
     public TextureEvent textureBinding;
 
@@ -138,14 +130,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         time_name = System.DateTime.Now.ToString("yyyyMMdd_hhmm");
         Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data");
         Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name);
+
         //Directory.CreateDirectory("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/IMU");
         fileIMG = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data.csv";
         //fileIMU = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/IMU/data.csv";
         fileTIME = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/timestamp.txt";
-        fileTimeNames_l = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_l.csv";
-        fileTimeNames_r = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_r.csv";
-
-        
     }
 
     void OnDestroy()
@@ -198,7 +187,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                     if (f != null)
                         q.Enqueue(f);
                     return;
-                } 
+                }
             }
 
             if (!matcher(frame))
@@ -284,177 +273,184 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             Array.Reverse(pixels, row * width, width);
         texture.SetPixels(pixels);*/
         texture.Apply();
+        //print(texture);
         uint width = (uint)texture.width;
-        uint height = (uint) texture.height;
-        UnityEngine.Experimental.Rendering.GraphicsFormat format_ = texture.graphicsFormat;
-        System.Byte[] dataTex=texture.GetRawTextureData();
+        uint height = (uint)texture.height;
+        
+        double time = frame.Timestamp;
+        StartCoroutine(copyTex(width, height, time));
+        /*var tex_data = texture.GetRawTextureData();
+        NativeArray<byte> imageBytes = new NativeArray<byte>(tex_data, Allocator.Temp);
+        UnityEngine.Experimental.Rendering.GraphicsFormat format_ =texture.graphicsFormat;
+        uint wid = (uint)texture.width;
+        uint hei= (uint)texture.height;
+       */
+        //Thread t = new Thread(()=>safeImag(imageBytes, format_,wid, hei ));
+        //t.Start();
+        //byte[] imag = texture.EncodeToPNG();
+        // print(frame.DataSize);
+        //print(texture);
+        // byte[] arr = new byte[frame.DataSize];
+        //Marshal.Copy(frame.Data, arr, 0, frame.DataSize);
+        //byte[] imag = ImageConversion.EncodeArrayToPNG(arr, texture.graphicsFormat, (uint)frame.Width, (uint)frame.Height);
 
-        // StartCoroutine(WaitToAvoidOverwritting());
-        /* if (lOrR == "right")
-         {
-             print((frame.Timestamp - prev_time_r)+" r");
-             prev_time_r = frame.Timestamp;
-             print(frame.Timestamp);
-         }
-         else
-         {
-             print((frame.Timestamp - prev_time_l) + " l");
-             prev_time_l = frame.Timestamp;
-         }
-         */
-        // while((Time.time - prev_time) < 0.05)
-        //{
+        //ImageDescription info = new ImageDescription(frame.Width, frame.Height, frame.Stride, frame.Width, frame.Height, TextureFormat.Alpha8, frame.DataSize);
+        //byte[] imag = texture.EncodeToPNG();
 
-        // }
-        StreamWriter writer_r = new StreamWriter(fileTimeNames_r, true);
-        StreamWriter writer_l = new StreamWriter(fileTimeNames_l, true);
-        //prev_time = Time.time;
-        if (lOrR == "right" && frame.Timestamp == prev_time_r)
+
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/" + _streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png", imag);
+
+        if (_streamIndex == 1)
         {
-           // print((frame.Timestamp - prev_time_r) + " r");
+            images_names.Add(_streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png");
+
         }
-        else if(lOrR == "left" && frame.Timestamp == prev_time_l)
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
+        amound_of_images += 1;
+        print(amound_of_images);
+        if (amound_of_images > 500)
         {
-            //print((frame.Timestamp - prev_time_l) + " l");
+            UnityEditor.EditorApplication.isPlaying = false;
         }
-        else
-        {
-            double time = frame.Timestamp;
-            
-            if (_streamIndex == 1)
-            {
+        
+        _height.Add(texture.height);
+        _width.Add(texture.width);
+        //print(images_names.Last());
 
-                writer_l.Write(_streamIndex.ToString() + "_" + time * 100 + "0000.png\n");
-                
-                amound_of_images_l += 1;
-                
-            }
-            else
-            {
-                writer_r.Write(_streamIndex.ToString() + "_" + time * 100 + "0000.png\n");
-                amound_of_images_r += 1;
-            }
-
-            
-
-            Thread t = new Thread(() => png(width, height, time, dataTex, format_));
-            t.Start();
-            //Texture2D copyTexture = new Texture2D(texture.width, texture.height);
-            //copyTexture.SetPixels(texture.GetPixels());
-            //copyTexture.Apply();
-            //tex_.Add(copyTexture);
-            // print(frame.DataSize);
-            //print(texture);
-            // byte[] arr = new byte[frame.DataSize];
-            //Marshal.Copy(frame.Data, arr, 0, frame.DataSize);
-            //byte[] imag = ImageConversion.EncodeArrayToPNG(arr, texture.graphicsFormat, (uint)frame.Width, (uint)frame.Height);
-
-            //ImageDescription info = new ImageDescription(frame.Width, frame.Height, frame.Stride, frame.Width, frame.Height, TextureFormat.Alpha8, frame.DataSize);
-
-
-            //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png",  bytes.ToArray());
-            // StartCoroutine(png(width,height,frame));
-
-            
-            //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
-            //print(amound_of_images);
-            print(amound_of_images_l);
-            //print(amound_of_images_r);
-
-
-            //_height.Add(height);
-            //_width.Add(width);
-            if (lOrR == "right")
-            {
-                prev_time_r = frame.Timestamp;
-            }
-            else
-            {
-                prev_time_l = frame.Timestamp;
-            }
-            
-        }
-        writer_l.Close();
-        writer_r.Close();
     }
 
-   /*IEnumerator WaitToAvoidOverwritting()
+    IEnumerator copyTex(uint width, uint height, double time)
     {
-        yield return new WaitForSeconds(1f);
-    }*/
+        Texture2D copyTexture = new Texture2D(texture.width, texture.height);
+        copyTexture.SetPixels(texture.GetPixels());
+        copyTexture.Apply();
+        tex_.Add(copyTexture);
+        print(texture.format);
+        print(copyTexture.format);
+        //byte[] imag = texture.EncodeToPNG();
+        UnityEngine.Experimental.Rendering.GraphicsFormat format_ = copyTexture.graphicsFormat;
+        System.Byte[] dataTex = copyTexture.GetRawTextureData();
+
+
+        Thread t = new Thread(() => png(width, height, time, dataTex, format_));
+        t.Start();
+        //NativeArray<byte> imageBytes = new NativeArray<byte>(texture.GetRawTextureData(), Allocator.Temp);
+        //var bytes = ImageConversion.EncodeNativeArrayToPNG(imageBytes, texture.graphicsFormat, (uint)texture.width, (uint)texture.height);
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images+".png", bytes.ToArray());
+
+        yield return null;
+    }
 
     public void png(uint width, uint height, double time, System.Byte[] imageBytes, UnityEngine.Experimental.Rendering.GraphicsFormat format_)
     {
         //NativeArray<byte> imageBytes2 = imageBytes;
-       
-        byte[] imag = ImageConversion.EncodeArrayToPNG(imageBytes, format_, width, height);
-        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name +"/" + _streamIndex.ToString() + "_" + time * 100 + "0000.png", imag);
 
-       // yield return null;
+        byte[] imag = ImageConversion.EncodeArrayToPNG(imageBytes, format_, width, height);
+        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/" + _streamIndex.ToString() + "_" + time * 100 + "0000.png", imag);
+
+        // yield return null;
+    }
+
+    public void safeImag(NativeArray<byte> imageBytes, UnityEngine.Experimental.Rendering.GraphicsFormat format_, uint width, uint height)
+    {
+        //print("hi");
+        //var bytes = ImageConversion.EncodeNativeArrayToPNG(imageBytes, format_,width,height ); 
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images+".png", bytes.ToArray());
+        byte[] imag = texture.EncodeToPNG();
+        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images + ".png", imag);
+
     }
 
     public void formate()
     {
-        // print(images_names);
+        print(amound_of_images);
         Texture2D tex = null;
         byte[] data;
         byte[] imag;
-        string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name+"/";
-        amound_of_images = Mathf.Max(amound_of_images_l, amound_of_images_r);
+        string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/";
+
         StreamWriter writer = new StreamWriter(fileIMG, true);
         StreamWriter writer_timestamp = new StreamWriter(fileTIME, true);
-        print(amound_of_images);
-        //print(amound_of_images_l);
-        //print(amound_of_images_r);
+
         writer.Write("#timestamp [ns],filename\n");
         //using (new avForThread(0, amound_of_images, 4, delegate (int start, int end)
         //  {
         //Parallel.For(0,amound_of_images,i=>
-        for (int i = 0; i < amound_of_images-1; i++)
+        //print(amound_of_images);
+        for (int i = 0; i < images_names.Count; i++)
         {
             //print("Start convert");
             //print(images_names[i]);
             //print(_height[i]);
             //print(_width[i]);
-            string img = "";
+            string img = images_names[i];
             //imag = tex_[i].EncodeToPNG();
 
             //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" +img , imag);
-            string imag_save_name= File.ReadLines(filePath + "timeName_l.csv").Skip(i).First();
-            
-            if (_streamIndex == 2)
-            {
-                img = File.ReadLines(filePath + "timeName_r.csv").Skip(i).First();
-            }
-            else
-            {
-                img = imag_save_name;
-            }
 
-            
+
 
             data = File.ReadAllBytes(filePath + img);
             //print(data.Length);
 
-            tex = new Texture2D(2,2);
-           
+            tex = new Texture2D(_width[i],_height[i]);
             tex.LoadImage(data);
+            Texture2D copyTexture = new Texture2D(tex.width, tex.height);
+            copyTexture.SetPixels(tex.GetPixels());
+            copyTexture.Apply();
+            print(copyTexture == tex_[i]);
+            print(copyTexture.format);
+            print(tex_[i].format);
+            UnityEngine.Color[] pixels = copyTexture.GetPixels();
+            UnityEngine.Color[] pixels_i = tex_[i].GetPixels();
 
-            int height = tex.height;
-            int width = tex.width;
-            print(width + ", " + height);
-            UnityEngine.Color[] pixels = tex.GetPixels();
+            int width = _width[i];
+            int height = _height[i];
+
+            imag = ImageConversion.EncodeArrayToPNG(tex.GetRawTextureData(), tex.graphicsFormat, (uint)width, (uint)height);
+            //imag = tex_[i].EncodeToPNG();
+
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + images_names[i].Remove(0, 3), imag);
+
+            imag = ImageConversion.EncodeArrayToPNG(tex_[i].GetRawTextureData(), tex_[i].graphicsFormat, (uint)width, (uint)height);
+            //imag = tex_[i].EncodeToPNG();
+
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + images_names[i].Remove(0, 1), imag);
+
+
+            print(pixels[0]);
+            print(pixels_i[0]);
+
+            //print(pixels.Length);
             Array.Reverse(pixels);
-            for (int row = 0; row < height; ++row)
-                Array.Reverse(pixels,row * width, width);
+            for (int row = 0; row < _height[i]; ++row)
+                Array.Reverse(pixels, row * _width[i], _width[i]);
             if (_streamIndex == 1)
             {
                 writer_timestamp.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "\n");
             }
-            writer.Write(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
-            print(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
-            //uint width = _width[i];
-            //uint height = _height[i];
+            writer.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "," + img.Remove(0, 2) + "\n");
+
+
+            //print(images_names.Count + " and " + amound_of_images + " must be equal \n");
+            /*Parallel.For(0, width, k => 
+             //for (int k = 0; k < width; k++)
+             {
+                for (int j = 0; j < height; j++)
+                 {
+                     //print(pixels[k * _height[i] + j])
+                     //System.Drawing.Color myColor = pixels[k * _height[i] + j];
+                     //print(pixels[k * _height[i] + j]);
+                     //pixels[k * _height[i] + j] = InvertColor(pixels[k * _height[i] + j]);
+
+                     float alpha = pixels[k * height + j][3];
+                     pixels[k * height + j][0] = alpha;
+                     pixels[k * height + j][1] = alpha;
+                     pixels[k * height + j][2] = alpha;
+                     pixels[k * height + j][3] = 1;
+                     //print(pixels[k * _height[i] + j]);
+                }
+             });*/
             for (int p = 0; p < pixels.Length; p++)
             {
                 float alpha = pixels[p][3];
@@ -465,24 +461,59 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             }
             //print(pixels[5 * _height[50] + 80][0]);
 
-            print(img);
+            //print(lOrR + ": ok");
             tex.SetPixels(pixels);
-            print(img);
             tex.Apply();
-            print(img);
-            imag = tex.EncodeToPNG();
+            imag = ImageConversion.EncodeArrayToPNG(tex.GetRawTextureData(), tex.graphicsFormat, (uint)width, (uint)height);
+            //imag = tex_[i].EncodeToPNG();
 
-            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + imag_save_name.Remove(0, 2), imag);
-            print(img);
-            /* System.Byte[] dataTex = tex.GetRawTextureData();
-            UnityEngine.Experimental.Rendering.GraphicsFormat format_ = tex.graphicsFormat;
-            string imageName = images_names[i];
-            // StartCoroutine(WaitToAvoidOverwritting());
-            Thread t = new Thread(() => png2(width, height, imageName, dataTex, format_));
-            t.Start();
-        */
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + images_names[i].Remove(0, 2), imag);
+
+            Array.Reverse(pixels_i);
+            for (int row = 0; row < _height[i]; ++row)
+                Array.Reverse(pixels_i, row * _width[i], _width[i]);
+           
+
+            //print(images_names.Count + " and " + amound_of_images + " must be equal \n");
+            /*Parallel.For(0, width, k => 
+             //for (int k = 0; k < width; k++)
+             {
+                for (int j = 0; j < height; j++)
+                 {
+                     //print(pixels[k * _height[i] + j])
+                     //System.Drawing.Color myColor = pixels[k * _height[i] + j];
+                     //print(pixels[k * _height[i] + j]);
+                     //pixels[k * _height[i] + j] = InvertColor(pixels[k * _height[i] + j]);
+
+                     float alpha = pixels[k * height + j][3];
+                     pixels[k * height + j][0] = alpha;
+                     pixels[k * height + j][1] = alpha;
+                     pixels[k * height + j][2] = alpha;
+                     pixels[k * height + j][3] = 1;
+                     //print(pixels[k * _height[i] + j]);
+                }
+             });*/
+            for (int p = 0; p < pixels_i.Length; p++)
+            {
+                float alpha = pixels_i[p][3];
+                pixels_i[p][0] = alpha;
+                pixels_i[p][1] = alpha;
+                pixels_i[p][2] = alpha;
+                pixels_i[p][3] = 1;
+            }
+            //print(pixels[5 * _height[50] + 80][0]);
+
+            //print(lOrR + ": ok");
+            tex_[i].SetPixels(pixels_i);
+            tex_[i].Apply();
+            imag = ImageConversion.EncodeArrayToPNG(tex_[i].GetRawTextureData(), tex_[i].graphicsFormat, (uint)width, (uint)height);
+            //imag = tex_[i].EncodeToPNG();
+
+            File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + images_names[i].Remove(0, 4), imag);
+
         }
-        //});
+        //})
+        //);
 
         writer.Close();
         writer_timestamp.Close();
@@ -511,14 +542,5 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         var maxColor = color.maxColorComponent;
         var mycolor = new UnityEngine.Color(color[0], color[1], color[2], 1 - color[3]);
         return mycolor;
-    }
-
-    public void png2(uint width, uint height, string imageName, System.Byte[] imageBytes, UnityEngine.Experimental.Rendering.GraphicsFormat format_)
-    {
-        //NativeArray<byte> imageBytes2 = imageBytes;
-        byte[] imag = ImageConversion.EncodeArrayToPNG(imageBytes, format_, width, height);
-        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + imageName.Remove(0, 2), imag);
-
-        // yield return null;
     }
 }

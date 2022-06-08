@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
 
 public class PoseExtractorCamera : MonoBehaviour
 {
@@ -10,15 +11,19 @@ public class PoseExtractorCamera : MonoBehaviour
     Quaternion cameraRot;
     GameObject cameraT265;
     string filename = "";
+    string filenameTXT = "";
     public List<double> static_ = new List<double>();
+    public List<string> time_ = new List<string>();
 
 
     void Start()
     {
         print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
         //print("hello there");
-        cameraT265 = GameObject.Find("Pose"); 
+        cameraT265 = GameObject.Find("Pose");
         filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+
     }
 
     // Update is called once per frame
@@ -35,7 +40,7 @@ public class PoseExtractorCamera : MonoBehaviour
         {
             static_.Add(cameraRot[i]);
         }
-
+        time_.Add(Time.time.ToString());
 
     }
 
@@ -62,6 +67,20 @@ public class PoseExtractorCamera : MonoBehaviour
 
             }
             tw.Close();
+
+            TextWriter tw2 = new StreamWriter(filenameTXT, false);
+            tw2.WriteLine("# time x y z qx qy qz qw");
+            tw2.Close();
+
+
+            tw2 = new StreamWriter(filenameTXT, true);
+            for (int i = 0; i < static_.Count / 7; i++)
+            {
+                tw2.WriteLine(time_[i]+" "+static_[i * 7] + " " + static_[i * 7 + 1] + " " + static_[i * 7 + 2] + " " +
+                    static_[i * 7 + 3] + " " + static_[i * 7 + 4] + " " + static_[i * 7 + 5] + " " + static_[i * 7 + 6]);
+
+            }
+            tw2.Close();
         }
 
     }

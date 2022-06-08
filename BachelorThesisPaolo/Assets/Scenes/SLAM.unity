@@ -227,6 +227,8 @@ GameObject:
   - component: {fileID: 111149766}
   - component: {fileID: 111149767}
   - component: {fileID: 111149771}
+  - component: {fileID: 111149768}
+  - component: {fileID: 111149769}
   m_Layer: 0
   m_Name: camera right
   m_TagString: Untagged
@@ -260,9 +262,75 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 111149765}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f59de22db6bfdfe46937570a9af2882b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Source: {fileID: 274669994}
+  _stream: 4
+  _format: 9
+  _streamIndex: 1
+  filterMode: 0
+  amound_of_images: 0
+  amound_of_images_r: 0
+  amound_of_images_l: 0
+  _width: 
+  _height: 
+  imu_: []
+  tex_: []
+  time_name: 
+  lOrR: 
+  fileIMG: 
+  fileIMU: 
+  fileTIME: 
+  textureBinding:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &111149768
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111149765}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a8dbae4bbea2f54084f4810518e284b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Source: {fileID: 274669994}
+  _stream: 4
+  _format: 9
+  _streamIndex: 1
+  filterMode: 0
+  amound_of_images: 0
+  amound_of_images_r: 0
+  amound_of_images_l: 0
+  _width: 
+  _height: 
+  imu_: []
+  tex_: []
+  time_name: 
+  lOrR: 
+  prev_time_l: 0
+  prev_time_r: 0
+  fileIMG: 
+  fileIMU: 
+  fileTIME: 
+  textureBinding:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &111149769
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111149765}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a22e41ec08588944a8e889757a600a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Source: {fileID: 274669994}
@@ -352,7 +420,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   processMode: 1
   DeviceConfiguration:
-    mode: 2
+    mode: 0
     Profiles:
     - Stream: 4
       Format: 9
@@ -380,13 +448,13 @@ MonoBehaviour:
       Height: 0
     - Stream: 8
       Format: 18
-      Framerate: 0
+      Framerate: 200
       StreamIndex: 0
       Width: 0
       Height: 0
     RequestedSerialNumber: 
     PlaybackFile: Y:/Documents/dataPoints_Intel/20220407_101111.bag
-    RecordPath: C:/Users/pbottoni/Documents/BachelorThesis/test.bag
+    RecordPath: C:/Users/pbottoni/Documents/BachelorThesis/20220601_053604.bag
 --- !u!1 &341674281
 GameObject:
   m_ObjectHideFlags: 0
@@ -1415,6 +1483,8 @@ GameObject:
   - component: {fileID: 1743359703}
   - component: {fileID: 1743359701}
   - component: {fileID: 1743359699}
+  - component: {fileID: 1743359700}
+  - component: {fileID: 1743359702}
   m_Layer: 0
   m_Name: camera left
   m_TagString: Untagged
@@ -1430,7 +1500,7 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1743359698}
   m_CullTransparentMesh: 1
---- !u!114 &1743359701
+--- !u!114 &1743359700
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -1439,7 +1509,73 @@ MonoBehaviour:
   m_GameObject: {fileID: 1743359698}
   m_Enabled: 1
   m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3a8dbae4bbea2f54084f4810518e284b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Source: {fileID: 274669994}
+  _stream: 4
+  _format: 9
+  _streamIndex: 2
+  filterMode: 0
+  amound_of_images: 0
+  amound_of_images_r: 0
+  amound_of_images_l: 0
+  _width: 
+  _height: 
+  imu_: []
+  tex_: []
+  time_name: 
+  lOrR: 
+  prev_time_l: 0
+  prev_time_r: 0
+  fileIMG: 
+  fileIMU: 
+  fileTIME: 
+  textureBinding:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1743359701
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743359698}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f59de22db6bfdfe46937570a9af2882b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  Source: {fileID: 274669994}
+  _stream: 4
+  _format: 9
+  _streamIndex: 2
+  filterMode: 0
+  amound_of_images: 0
+  amound_of_images_r: 0
+  amound_of_images_l: 0
+  _width: 
+  _height: 
+  imu_: []
+  tex_: []
+  time_name: 
+  lOrR: 
+  fileIMG: 
+  fileIMU: 
+  fileTIME: 
+  textureBinding:
+    m_PersistentCalls:
+      m_Calls: []
+--- !u!114 &1743359702
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1743359698}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1a22e41ec08588944a8e889757a600a5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Source: {fileID: 274669994}
@@ -1489,7 +1625,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1790122221}
   - component: {fileID: 1790122220}
-  - component: {fileID: 1790122223}
   - component: {fileID: 1790122224}
   m_Layer: 0
   m_Name: Pose
@@ -1529,36 +1664,6 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 2
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1790122223
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1790122219}
-  m_Enabled: 0
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f59de22db6bfdfe46937570a9af2882b, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Source: {fileID: 274669994}
-  _stream: 4
-  _format: 9
-  _streamIndex: 0
-  filterMode: 0
-  amound_of_images: 0
-  _width: 
-  _height: 
-  imu_: []
-  tex_: []
-  time_name: 
-  lOrR: 
-  fileIMG: 
-  fileIMU: 
-  fileTIME: 
-  textureBinding:
-    m_PersistentCalls:
-      m_Calls: []
 --- !u!114 &1790122224
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1572,6 +1677,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   static_: []
+  time_: []
 --- !u!1 &1796069354
 GameObject:
   m_ObjectHideFlags: 0

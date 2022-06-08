@@ -11,12 +11,15 @@ public class PoseExtractorTracker : MonoBehaviour
     public Quaternion rot;
     GameObject tracker;
     string filename = "";
+    string filenameTXT = "";
     public List<double> static_ = new List<double>();
+    public List<string> time_ = new List<string>();
 
     void Start()
     {
         tracker = GameObject.Find("Tracker");
         filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
     }
 
     // Update is called once per frame
@@ -39,7 +42,7 @@ public class PoseExtractorTracker : MonoBehaviour
         {
             static_.Add(rot[i]);
         }
-
+        time_.Add(Time.time.ToString());
     }
 
     void OnApplicationQuit()
@@ -65,6 +68,20 @@ public class PoseExtractorTracker : MonoBehaviour
 
             }
             tw.Close();
+
+            TextWriter tw2 = new StreamWriter(filenameTXT, false);
+            tw2.WriteLine("# time x y z qx qy qz qw");
+            tw2.Close();
+
+
+            tw2 = new StreamWriter(filenameTXT, true);
+            for (int i = 0; i < static_.Count / 7; i++)
+            {
+                tw2.WriteLine(time_[i] + " " + static_[i * 7] + " " + static_[i * 7 + 1] + " " + static_[i * 7 + 2] + " " +
+                    static_[i * 7 + 3] + " " + static_[i * 7 + 4] + " " + static_[i * 7 + 5] + " " + static_[i * 7 + 6]);
+
+            }
+            tw2.Close();
         }
 
     }

@@ -11,6 +11,7 @@ using System.Runtime.InteropServices;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using Unity.Collections;
 
 
 public class RsStreamTextureRenderer : MonoBehaviour
@@ -94,11 +95,14 @@ public class RsStreamTextureRenderer : MonoBehaviour
     
 
     public int amound_of_images=0;
+    public int amound_of_images_r = 0;
+    public int amound_of_images_l = 0;
     public static List<string> images_names = new List<string>();
     public List<int> _width = new List<int>();
     public List<int> _height = new List<int>();
     public List<double> imu_ = new List<double>();
     public List<Texture2D> tex_ = new List<Texture2D>();
+    
     public string time_name = "";
     public string lOrR = "";
 
@@ -268,30 +272,45 @@ public class RsStreamTextureRenderer : MonoBehaviour
             Array.Reverse(pixels, row * width, width);
         texture.SetPixels(pixels);*/
         texture.Apply();
-        Texture2D copyTexture = new Texture2D(texture.width, texture.height);
-        copyTexture.SetPixels(texture.GetPixels());
-        copyTexture.Apply();
-        tex_.Add(copyTexture);
+        StartCoroutine(copyTex());
+        /*var tex_data = texture.GetRawTextureData();
+        NativeArray<byte> imageBytes = new NativeArray<byte>(tex_data, Allocator.Temp);
+        UnityEngine.Experimental.Rendering.GraphicsFormat format_ =texture.graphicsFormat;
+        uint wid = (uint)texture.width;
+        uint hei= (uint)texture.height;
+       */
+        //Thread t = new Thread(()=>safeImag(imageBytes, format_,wid, hei ));
+        //t.Start();
         //byte[] imag = texture.EncodeToPNG();
-       // print(frame.DataSize);
+        // print(frame.DataSize);
         //print(texture);
-       // byte[] arr = new byte[frame.DataSize];
+        // byte[] arr = new byte[frame.DataSize];
         //Marshal.Copy(frame.Data, arr, 0, frame.DataSize);
         //byte[] imag = ImageConversion.EncodeArrayToPNG(arr, texture.graphicsFormat, (uint)frame.Width, (uint)frame.Height);
-            
+
         //ImageDescription info = new ImageDescription(frame.Width, frame.Height, frame.Stride, frame.Width, frame.Height, TextureFormat.Alpha8, frame.DataSize);
-        
-        
+        //byte[] imag = texture.EncodeToPNG();
+
+
         //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png", imag);
-       
+
 
         if (_streamIndex == 1)
         {
             images_names.Add(_streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png");
-            
+            amound_of_images_l += 1;
+        }
+        else
+        {
+            amound_of_images_r += 1;
         }
         //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
         amound_of_images += 1;
+        print(amound_of_images);
+        if (amound_of_images > 500)
+        {
+            UnityEditor.EditorApplication.isPlaying = false;
+        }
             int width = texture.width;
             int height = texture.height;
             _height.Add(height);
@@ -300,14 +319,38 @@ public class RsStreamTextureRenderer : MonoBehaviour
 
     }
 
+    IEnumerator copyTex(){
+        Texture2D copyTexture = new Texture2D(texture.width, texture.height);
+        copyTexture.SetPixels(texture.GetPixels());
+        copyTexture.Apply();
+        tex_.Add(copyTexture);
+        //byte[] imag = texture.EncodeToPNG();
+
+        //NativeArray<byte> imageBytes = new NativeArray<byte>(texture.GetRawTextureData(), Allocator.Temp);
+        //var bytes = ImageConversion.EncodeNativeArrayToPNG(imageBytes, texture.graphicsFormat, (uint)texture.width, (uint)texture.height);
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images+".png", bytes.ToArray());
+
+        yield return null;
+    }
+    public void safeImag(NativeArray<byte> imageBytes, UnityEngine.Experimental.Rendering.GraphicsFormat format_, uint width, uint height)
+    {
+        //print("hi");
+        //var bytes = ImageConversion.EncodeNativeArrayToPNG(imageBytes, format_,width,height ); 
+        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images+".png", bytes.ToArray());
+        byte[] imag = texture.EncodeToPNG();
+        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + amound_of_images+".png", imag);
+
+    }
+
     public void formate()
     {
-       // print(images_names);
+        print(amound_of_images_l);
+        print(amound_of_images_r);
         //Texture2D tex = null;
         //byte[] data;
         byte[] imag;
         //string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/";
-
+        amound_of_images = Mathf.Max(amound_of_images_l, amound_of_images_r);
         StreamWriter writer = new StreamWriter(fileIMG, true);
         StreamWriter writer_timestamp = new StreamWriter(fileTIME, true);
        
@@ -315,8 +358,12 @@ public class RsStreamTextureRenderer : MonoBehaviour
         //using (new avForThread(0, amound_of_images, 4, delegate (int start, int end)
         //  {
         //Parallel.For(0,amound_of_images,i=>
-        //print(amound_of_images);
-        for (int i = 0; i < images_names.Count; i++)
+        //
+        
+        
+        
+        print(amound_of_images);
+        for (int i = 0; i < amound_of_images; i++)
         {
             //print("Start convert");
             //print(images_names[i]);
@@ -335,6 +382,7 @@ public class RsStreamTextureRenderer : MonoBehaviour
             //tex = new Texture2D(_width[i],_height[i]);
             //tex.LoadImage(data);
             UnityEngine.Color[] pixels = tex_[i].GetPixels();
+            print(pixels.Length);
             Array.Reverse(pixels);
             for (int row = 0; row < _height[i]; ++row)
                 Array.Reverse(pixels, row * _width[i], _width[i]);
@@ -347,7 +395,7 @@ public class RsStreamTextureRenderer : MonoBehaviour
             int width = _width[i];
             int height = _height[i];
             //print(images_names.Count + " and " + amound_of_images + " must be equal \n");
-           Parallel.For(0, width, k => 
+           /*Parallel.For(0, width, k => 
             //for (int k = 0; k < width; k++)
             {
                for (int j = 0; j < height; j++)
@@ -364,7 +412,14 @@ public class RsStreamTextureRenderer : MonoBehaviour
                     pixels[k * height + j][3] = 1;
                     //print(pixels[k * _height[i] + j]);
                }
-            });
+            });*/
+            for(int p =0; p < pixels.Length;p++){
+                float alpha = pixels[p][3];
+                    pixels[p][0] = alpha;
+                    pixels[p][1] = alpha;
+                    pixels[p][2]= alpha;
+                    pixels[p][3] = 1;
+            }
             //print(pixels[5 * _height[50] + 80][0]);
 
             print(lOrR + ": ok");

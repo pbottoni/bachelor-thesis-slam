@@ -4,27 +4,29 @@ using UnityEngine;
 using System.IO;
 using System;
 
-public class PoseExtractorCamera : MonoBehaviour
+public class PoseExtractorOculus : MonoBehaviour
 {
-    // Start is called before the first frame update
-    Vector3 cameraPos;
-    Quaternion cameraRot;
-    GameObject cameraT265;
+    GameObject centerEye;
+    Vector3 headsetPos;
+    Quaternion headsetRot;
     string filename = "";
     string filenameTXT = "";
     TextWriter tw;
     TextWriter tw2;
-    public List<double> static_ = new List<double>();
+    public List<double> static_= new List<double>();
     public List<string> time_ = new List<string>();
 
-
+    //[Serializable]
+    //private RsStreamTextureRenderer2 rs;
+    // Start is called before the first frame update
     void Start()
     {
         //print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
+        centerEye = GameObject.Find("CenterEyeAnchor");
+        //rs = GameObject.FindObjectOfType<RsStreamTextureRenderer2>();
         //print("hello there");
-        cameraT265 = GameObject.Find("Pose");
-        filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
-        filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
         tw = new StreamWriter(filename, false);
         tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
         tw.Close();
@@ -34,24 +36,26 @@ public class PoseExtractorCamera : MonoBehaviour
         //tw2.Close();
     }
 
+
     // Update is called once per frame
-    void Update()
+    void Update_slow()
     {
         
         time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
 
-        cameraPos = cameraT265.transform.position;
-        cameraRot = cameraT265.transform.rotation;
+
+        headsetPos = centerEye.transform.position;
+        headsetRot = centerEye.transform.rotation;
 
         for (int i = 0; i < 3; i++)
         {
-            static_.Add(cameraPos[i]);
+            static_.Add(headsetPos[i]);
         }
         for (int i = 0; i < 4; i++)
         {
-            static_.Add(cameraRot[i]);
+            static_.Add(headsetRot[i]);
         }
-        //time_.Add(Time.time.ToString());
+        time_.Add(Time.time.ToString());
 
         tw = new StreamWriter(filename, true);
         tw.WriteLine("Pose," + static_[0] + "," + static_[1] + "," + static_[2] + "," +
@@ -65,6 +69,7 @@ public class PoseExtractorCamera : MonoBehaviour
 
         static_.Clear();
         time_.Clear();
+        
     }
 
     void OnApplicationQuit()
@@ -83,11 +88,11 @@ public class PoseExtractorCamera : MonoBehaviour
 
 
             tw = new StreamWriter(filename, true);
-            for (int i = 0; i < static_.Count / 7; i++)
+            for(int i = 0; i < static_.Count/7; i++)
             {
                 tw.WriteLine("Pose," + static_[i * 7] + "," + static_[i * 7 + 1] + "," + static_[i * 7 + 2] + "," +
                     static_[i * 7 + 3] + "," + static_[i * 7 + 4] + "," + static_[i * 7 + 5] + "," + static_[i * 7 + 6]);
-
+           
             }
             tw.Close();
 
@@ -99,7 +104,7 @@ public class PoseExtractorCamera : MonoBehaviour
             tw2 = new StreamWriter(filenameTXT, true);
             for (int i = 0; i < static_.Count / 7; i++)
             {
-                tw2.WriteLine(time_[i]+" "+static_[i * 7] + " " + static_[i * 7 + 1] + " " + static_[i * 7 + 2] + " " +
+                tw2.WriteLine(time_[i] + " " + static_[i * 7] + " " + static_[i * 7 + 1] + " " + static_[i * 7 + 2] + " " +
                     static_[i * 7 + 3] + " " + static_[i * 7 + 4] + " " + static_[i * 7 + 5] + " " + static_[i * 7 + 6]);
 
             }
@@ -108,4 +113,3 @@ public class PoseExtractorCamera : MonoBehaviour
 
     }
 }
-

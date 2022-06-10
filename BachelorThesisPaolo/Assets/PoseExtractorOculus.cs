@@ -2,37 +2,52 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
 
 public class PoseExtractorOculus : MonoBehaviour
 {
-    GameObject centerEye;
-    Vector3 headsetPos;
-    Quaternion headsetRot;
-    string filename = "";
-    string filenameTXT = "";
-
-
+    public GameObject centerEye;
+    public Vector3 headsetPos;
+    public Quaternion headsetRot;
+    public string filename = "";
+    public string filenameTXT = "";
+    public TextWriter tw;
+    public TextWriter tw2;
     public List<double> static_= new List<double>();
     public List<string> time_ = new List<string>();
+
+    public PoseExtractorOculus() { }
     // Start is called before the first frame update
-    void Start()
+    public void Start()
     {
-        print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
+        //print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
         centerEye = GameObject.Find("CenterEyeAnchor");
-        print("hello there");
+        //rs = GameObject.FindObjectOfType<RsStreamTextureRenderer2>();
+        //print("hello there");
         filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
         filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        tw = new StreamWriter(filename, false);
+        tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
+        tw.Close();
+        
+        //tw2 = new StreamWriter(filenameTXT, false);
+        //tw2.WriteLine("# time x y z qx qy qz qw");
+        //tw2.Close();
 
     }
 
 
     // Update is called once per frame
-    void Update()
+    public void update()
     {
+
+        time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
+
+
         headsetPos = centerEye.transform.position;
         headsetRot = centerEye.transform.rotation;
 
-        for (int i =0; i < 3; i++)
+        for (int i = 0; i < 3; i++)
         {
             static_.Add(headsetPos[i]);
         }
@@ -42,12 +57,25 @@ public class PoseExtractorOculus : MonoBehaviour
         }
         time_.Add(Time.time.ToString());
 
+        tw = new StreamWriter(filename, true);
+        tw.WriteLine("Pose," + static_[0] + "," + static_[1] + "," + static_[2] + "," +
+                    static_[3] + "," + static_[4] + "," + static_[5] + "," + static_[6]);
+        tw.Close();
+
+        tw2 = new StreamWriter(filenameTXT, true);
+        tw2.WriteLine(time_[0] + " " + static_[0] + " " + static_[1] + " " + static_[2] + " " +
+                    static_[3] + " " + static_[4] + " " + static_[5] + " " + static_[6]);
+        tw2.Close();
+
+        static_.Clear();
+        time_.Clear();
+        
     }
 
-    void OnApplicationQuit()
+    public void OnApplicationQuit()
     {
-        print("done");
-        WrtieCSV();
+        //print("done");
+        //WrtieCSV();
     }
 
     public void WrtieCSV()

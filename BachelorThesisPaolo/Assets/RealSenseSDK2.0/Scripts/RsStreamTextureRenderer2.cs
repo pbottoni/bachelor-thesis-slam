@@ -91,12 +91,9 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     public FilterMode filterMode = FilterMode.Point;
 
     protected Texture2D texture;
-
-
-
-    public int amound_of_images = 0;
-    public int amound_of_images_r = 0;
-    public int amound_of_images_l = 0;
+    public ulong amound_of_images = 0;
+    public ulong amound_of_images_r = 0;
+    public ulong amound_of_images_l = 0;
     //public static List<string> images_names_r = new List<string>();
     //public static List<string> images_names_l = new List<string>();
     //public List<uint> _width = new List<uint>();
@@ -121,11 +118,40 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     FrameQueue q;
     Predicate<Frame> matcher;
 
+    //ugly extra because something is acting crazy
+    public GameObject centerEye;
+    public Vector3 headsetPos;
+    public Quaternion headsetRot;
+    public string filenameO = "";
+    public string filenameTXTO = "";
+    public TextWriter twO;
+    public TextWriter tw2O;
+    public List<double> static_O = new List<double>();
+    public List<string> time_ = new List<string>();
+
+    Vector3 cameraPos;
+    Quaternion cameraRot;
+    GameObject cameraT265;
+    string filenameC = "";
+    string filenameTXTC = "";
+    TextWriter twC;
+    TextWriter tw2C;
+    public List<double> static_C = new List<double>();
+
+    public Vector3 pos;
+    public Quaternion rot;
+    GameObject tracker;
+    string filenameT = "";
+    string filenameTXTT = "";
+    TextWriter twT;
+    TextWriter tw2T;
+    public List<double> static_T = new List<double>();
+
     void Start()
     {
         Source.OnStart += OnStartStreaming;
         Source.OnStop += OnStopStreaming;
-
+                
         if (_streamIndex == 2)
         {
             lOrR = "right";
@@ -144,8 +170,30 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         fileTIME = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/timestamp.txt";
         fileTimeNames_l = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_l.csv";
         fileTimeNames_r = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_r.csv";
-
         
+        
+        centerEye = GameObject.Find("CenterEyeAnchor");
+        //rs = GameObject.FindObjectOfType<RsStreamTextureRenderer2>();
+        //print("hello there");
+        filenameO = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXTO = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        twO = new StreamWriter(filenameO, false);
+        twO.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
+        twO.Close();
+
+        cameraT265 = GameObject.Find("Pose");
+        filenameC = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXTC = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        twC = new StreamWriter(filenameC, false);
+        twC.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
+        twC.Close();
+
+        tracker = GameObject.Find("Tracker");
+        filenameT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+        filenameTXTT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        twT = new StreamWriter(filenameT, false);
+        twT.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
+        twT.Close();
     }
 
     void OnDestroy()
@@ -186,7 +234,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             return p.Stream == _stream && p.Format == _format && (p.Index == _streamIndex || _streamIndex == -1);
     }
 
-    void OnNewSample(Frame frame)
+    public void OnNewSample(Frame frame)
     {
         try
         {
@@ -225,8 +273,9 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             BPP(texture.format) != vf.BitsPerPixel;
     }
 
-    protected void Update()
+    public void Update()
     {
+        
         if (q != null)
         {
             VideoFrame frame;
@@ -252,7 +301,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         }
     }
 
-    private void ProcessFrame(VideoFrame frame)
+    public void ProcessFrame(VideoFrame frame)
     {
 
         if (HasTextureConflict(frame))
@@ -327,7 +376,90 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 writer_l.Write(_streamIndex.ToString() + "_" + time * 100 + "0000.png\n");
                 
                 amound_of_images_l += 1;
+
                 
+                time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
+
+                //for pose oculus
+                headsetPos = centerEye.transform.position;
+                headsetRot = centerEye.transform.rotation;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    static_O.Add(headsetPos[i]);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    static_O.Add(headsetRot[i]);
+                }
+                time_.Add(Time.time.ToString());
+
+                twO = new StreamWriter(filenameO, true);
+                twO.WriteLine("Pose," + static_O[0] + "," + static_O[1] + "," + static_O[2] + "," +
+                            static_O[3] + "," + static_O[4] + "," + static_O[5] + "," + static_O[6]);
+                twO.Close();
+
+                tw2O = new StreamWriter(filenameTXTO, true);
+                tw2O.WriteLine(time_[0] + " " + static_O[0] + " " + static_O[1] + " " + static_O[2] + " " +
+                            static_O[3] + " " + static_O[4] + " " + static_O[5] + " " + static_O[6]);
+                tw2O.Close();
+
+                static_O.Clear();
+                //time_.Clear();
+
+                //for pose camera
+                cameraPos = cameraT265.transform.position;
+                cameraRot = cameraT265.transform.rotation;
+
+                for (int i = 0; i < 3; i++)
+                {
+                    static_C.Add(cameraPos[i]);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    static_C.Add(cameraRot[i]);
+                }
+                //time_.Add(Time.time.ToString());
+
+                twC = new StreamWriter(filenameC, true);
+                twC.WriteLine("Pose," + static_C[0] + "," + static_C[1] + "," + static_C[2] + "," +
+                            static_C[3] + "," + static_C[4] + "," + static_C[5] + "," + static_C[6]);
+                twC.Close();
+
+                tw2C = new StreamWriter(filenameTXTC, true);
+                tw2C.WriteLine(time_[0] + " " + static_C[0] + " " + static_C[1] + " " + static_C[2] + " " +
+                            static_C[3] + " " + static_C[4] + " " + static_C[5] + " " + static_C[6]);
+                tw2C.Close();
+
+                static_C.Clear();
+
+                //for pose tracker
+                pos = tracker.transform.position;
+                rot = tracker.transform.rotation;
+                //print(pos);
+                //print(rot);
+
+                for (int i = 0; i < 3; i++)
+                {
+                    static_T.Add(pos[i]);
+                }
+                for (int i = 0; i < 4; i++)
+                {
+                    static_T.Add(rot[i]);
+                }
+                //print(Time.time.ToString());
+                twT = new StreamWriter(filenameT, true);
+                twT.WriteLine("Pose," + static_T[0] + "," + static_T[1] + "," + static_T[2] + "," +
+                            static_T[3] + "," + static_T[4] + "," + static_T[5] + "," + static_T[6]);
+                twT.Close();
+
+                tw2T = new StreamWriter(filenameTXTT, true);
+                tw2T.WriteLine(time_[0] + " " + static_T[0] + " " + static_T[1] + " " + static_T[2] + " " +
+                            static_T[3] + " " + static_T[4] + " " + static_T[5] + " " + static_T[6]);
+                tw2T.Close();
+
+                static_T.Clear();
+                time_.Clear();
             }
             else
             {
@@ -400,22 +532,42 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         byte[] data;
         byte[] imag;
         string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name+"/";
-        amound_of_images = Mathf.Max(amound_of_images_l, amound_of_images_r);
+        ulong lineCount_r = 0;
+        using (var reader = File.OpenText(filePath + "timeName_r.csv"))
+        {
+            while (reader.ReadLine() != null)
+            {
+                lineCount_r++;
+            }
+            reader.Close();
+        }
+        //var lineCount_l = 0;
+        //using (var reader = File.OpenText(filePath + "timeName_l.csv"))
+        //{
+        //    while (reader.ReadLine() != null)
+        //    {
+        //        lineCount_l++;
+        //    }
+        //}
+        //amound_of_images = Mathf.Max(amound_of_images_l,amound_of_images_r);
+        amound_of_images = lineCount_r;
+        //print(lineCount_l + ", " + lineCount_r + ", " + amound_of_images);
         StreamWriter writer = new StreamWriter(fileIMG, true);
         StreamWriter writer_timestamp = new StreamWriter(fileTIME, true);
-        print(amound_of_images);
+        //print(amound_of_images);
         //print(amound_of_images_l);
         //print(amound_of_images_r);
         writer.Write("#timestamp [ns],filename\n");
         //using (new avForThread(0, amound_of_images, 4, delegate (int start, int end)
         //  {
         //Parallel.For(0,amound_of_images,i=>
-        for (int i = 0; i < amound_of_images-1; i++)
+        for (int i = 0; i < (int)amound_of_images-1; i++)
         {
             //print("Start convert");
             //print(images_names[i]);
             //print(_height[i]);
             //print(_width[i]);
+            //string img = i;
             string img = "";
             //imag = tex_[i].EncodeToPNG();
 
@@ -432,7 +584,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             }
 
             
-
+            //string imag_save_name = i;
             data = File.ReadAllBytes(filePath + img);
             //print(data.Length);
 
@@ -442,7 +594,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
             int height = tex.height;
             int width = tex.width;
-            print(width + ", " + height);
+            //print(width + ", " + height);
             UnityEngine.Color[] pixels = tex.GetPixels();
             Array.Reverse(pixels);
             for (int row = 0; row < height; ++row)
@@ -452,9 +604,10 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 writer_timestamp.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "\n");
             }
             writer.Write(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
-            print(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
+            //print(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
             //uint width = _width[i];
             //uint height = _height[i];
+            
             for (int p = 0; p < pixels.Length; p++)
             {
                 float alpha = pixels[p][3];
@@ -464,16 +617,16 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 pixels[p][3] = 1;
             }
             //print(pixels[5 * _height[50] + 80][0]);
-
-            print(img);
+            
+            //print(img);
             tex.SetPixels(pixels);
-            print(img);
+            //print(img);
             tex.Apply();
-            print(img);
+            //print(img);
             imag = tex.EncodeToPNG();
 
             File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + imag_save_name.Remove(0, 2), imag);
-            print(img);
+            //print(img);
             /* System.Byte[] dataTex = tex.GetRawTextureData();
             UnityEngine.Experimental.Rendering.GraphicsFormat format_ = tex.graphicsFormat;
             string imageName = images_names[i];

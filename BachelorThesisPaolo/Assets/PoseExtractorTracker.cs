@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
+using System;
 
 
 public class PoseExtractorTracker : MonoBehaviour
@@ -12,6 +13,8 @@ public class PoseExtractorTracker : MonoBehaviour
     GameObject tracker;
     string filename = "";
     string filenameTXT = "";
+    TextWriter tw;
+    TextWriter tw2;
     public List<double> static_ = new List<double>();
     public List<string> time_ = new List<string>();
 
@@ -20,6 +23,13 @@ public class PoseExtractorTracker : MonoBehaviour
         tracker = GameObject.Find("Tracker");
         filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
         filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_tracker_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
+        tw = new StreamWriter(filename, false);
+        tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
+        tw.Close();
+        
+        //tw2 = new StreamWriter(filenameTXT, false);
+        //tw2.WriteLine("# time x y z qx qy qz qw");
+        //tw2.Close();
     }
 
     // Update is called once per frame
@@ -29,6 +39,8 @@ public class PoseExtractorTracker : MonoBehaviour
 
         //rot = VivePose.GetPoseEx(TrackerRole.Tracker1).rot;
         
+        time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
+
         pos = tracker.transform.position;
         rot = tracker.transform.rotation;
         //print(pos);
@@ -42,13 +54,25 @@ public class PoseExtractorTracker : MonoBehaviour
         {
             static_.Add(rot[i]);
         }
-        time_.Add(Time.time.ToString());
+        //print(Time.time.ToString());
+        tw = new StreamWriter(filename, true);
+        tw.WriteLine("Pose," + static_[0] + "," + static_[1] + "," + static_[2] + "," +
+                    static_[3] + "," + static_[4] + "," + static_[5] + "," + static_[6]);
+        tw.Close();
+
+        tw2 = new StreamWriter(filenameTXT, true);
+        tw2.WriteLine(time_[0] + " " + static_[0] + " " + static_[1] + " " + static_[2] + " " +
+                    static_[3] + " " + static_[4] + " " + static_[5] + " " + static_[6]);
+        tw2.Close();
+
+        static_.Clear();
+        time_.Clear();
     }
 
     void OnApplicationQuit()
     {
-        print("done");
-        WrtieCSV();
+        //print("done");
+       // WrtieCSV();
     }
 
     public void WrtieCSV()

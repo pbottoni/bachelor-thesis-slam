@@ -36,7 +36,7 @@ public class IMU : MonoBehaviour
     FrameQueue q;
 
     void Start()
-    {
+    {   
         Source.OnStart += OnStartStreaming;
         Source.OnStop += OnStopStreaming;
         time_name = System.DateTime.Now.ToString("yyyyMMdd_hhmm");
@@ -50,6 +50,7 @@ public class IMU : MonoBehaviour
         tw2.WriteLine("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS_S_z [rad s^-1],a_RS_S_x [m s^-2],a_RS_S_y [m s^-2],a_RS_S_z [m s^-2]");
         tw2.Close();
         
+
     }
 
     private void OnStartStreaming(PipelineProfile profile)
@@ -199,7 +200,7 @@ public class IMU : MonoBehaviour
 
     public void WrtieCSV()
     {
-
+      
         TextWriter tw = new System.IO.StreamWriter(filename, false);
         tw.WriteLine("#timestamp [ns],w_RS_S_x [rad s^-1],w_RS_S_y [rad s^-1],w_RS_S_z [rad s^-1],a_RS_S_x [m s^-2],a_RS_S_y [m s^-2],a_RS_S_z [m s^-2]");
         tw.Close();

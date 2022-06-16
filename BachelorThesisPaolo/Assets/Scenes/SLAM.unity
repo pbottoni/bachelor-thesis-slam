@@ -327,6 +327,8 @@ MonoBehaviour:
   static_O: []
   time_: []
   static_C: []
+  amound_of_files_l: 0
+  amound_of_files_r: 0
   pos: {x: 0, y: 0, z: 0}
   rot: {x: 0, y: 0, z: 0, w: 0}
   static_T: []
@@ -1630,7 +1632,7 @@ PrefabInstance:
     - target: {fileID: 3681499227134588921, guid: 6322f0eee08d182429c1fcf374227c91,
         type: 3}
       propertyPath: index
-      value: 1
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 3681499227134588925, guid: 6322f0eee08d182429c1fcf374227c91,
         type: 3}
@@ -1779,6 +1781,8 @@ MonoBehaviour:
   static_O: []
   time_: []
   static_C: []
+  amound_of_files_l: 0
+  amound_of_files_r: 0
   pos: {x: 0, y: 0, z: 0}
   rot: {x: 0, y: 0, z: 0, w: 0}
   static_T: []

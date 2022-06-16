@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 
 
-public class RsStreamTextureRenderer2 : MonoBehaviour
+public class RsStreamTextureRendererFast : MonoBehaviour
 {
     private static TextureFormat Convert(Format lrsFormat)
     {
@@ -100,11 +100,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     //public List<uint> _width = new List<uint>();
     //public List<uint> _height = new List<uint>();
     //public List<double> imu_ = new List<double>();
-    
+
     //public List<Texture2D> tex_ = new List<Texture2D>();
     public string time_name = "";
     public string lOrR = "";
-    
+
     public double prev_time_l = 0;
     public double prev_time_r = 0;
 
@@ -155,7 +155,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     {
         Source.OnStart += OnStartStreaming;
         Source.OnStop += OnStopStreaming;
-                
+
         if (_streamIndex == 2)
         {
             lOrR = "right";
@@ -174,8 +174,8 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         fileTIME = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/timestamp.txt";
         fileTimeNames_l = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_l.csv";
         fileTimeNames_r = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_r.csv";
-        
-        
+
+
         centerEye = GameObject.Find("CenterEyeAnchor");
         //rs = GameObject.FindObjectOfType<RsStreamTextureRenderer2>();
         //print("hello there");
@@ -212,7 +212,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         {
             q.Dispose();
         }
-         formate();
+        formate();
     }
 
     protected void OnStopStreaming()
@@ -223,7 +223,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             q.Dispose();
             q = null;
         }
-        
+
     }
 
     public void OnStartStreaming(PipelineProfile activeProfile)
@@ -251,7 +251,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                     if (f != null)
                         q.Enqueue(f);
                     return;
-                } 
+                }
             }
 
             if (!matcher(frame))
@@ -280,7 +280,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
     public void Update()
     {
-        
+
         if (q != null)
         {
             VideoFrame frame;
@@ -337,11 +337,27 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         for (int row = 0; row < height; ++row)
             Array.Reverse(pixels, row * width, width);
         texture.SetPixels(pixels);*/
-        texture.Apply();
+        UnityEngine.Color[] pixels = texture.GetPixels();
+
+
         uint width = (uint)texture.width;
-        uint height = (uint) texture.height;
-        UnityEngine.Experimental.Rendering.GraphicsFormat format_ = texture.graphicsFormat;
-        System.Byte[] dataTex=texture.GetRawTextureData();
+        uint height = (uint)texture.height;
+        //Thread t2 = new Thread(() => invertImage((int)width,(int) height, ref pixels));
+        Thread t2 = new Thread(() => {
+            Array.Reverse(pixels);
+            for (int row = 0; row < (int) height; ++row)
+                Array.Reverse(pixels, row * (int)width, (int)width);
+
+            for (int p = 0; p < pixels.Length; p++)
+            {
+                float alpha = pixels[p][3];
+                pixels[p][0] = alpha;
+                pixels[p][1] = alpha;
+                pixels[p][2] = alpha;
+                pixels[p][3] = 1;
+            }
+        });
+        t2.Start();
 
         // StartCoroutine(WaitToAvoidOverwritting());
         /* if (lOrR == "right")
@@ -365,24 +381,24 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         //prev_time = Time.time;
         if (lOrR == "right" && frame.Timestamp == prev_time_r)
         {
-           // print((frame.Timestamp - prev_time_r) + " r");
+            // print((frame.Timestamp - prev_time_r) + " r");
         }
-        else if(lOrR == "left" && frame.Timestamp == prev_time_l)
+        else if (lOrR == "left" && frame.Timestamp == prev_time_l)
         {
             //print((frame.Timestamp - prev_time_l) + " l");
         }
         else
         {
             double time = frame.Timestamp;
-            
+
             if (_streamIndex == 1)
             {
 
                 writer_l.Write(_streamIndex.ToString() + "_" + time * 100 + "0000.png\n");
-                
+
                 amound_of_images_l += 1;
 
-                
+
                 time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
 
                 //for pose oculus
@@ -472,7 +488,29 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 amound_of_images_r += 1;
             }
 
-           
+            print(amound_of_images_l);
+            //print(amound_of_images_r);
+
+
+            //_height.Add(height);
+            //_width.Add(width);
+            if (lOrR == "right")
+            {
+                prev_time_r = frame.Timestamp;
+            }
+            else
+            {
+                prev_time_l = frame.Timestamp;
+            }
+
+            t2.Join();
+
+            texture.SetPixels(pixels);
+            //print(img);
+            texture.Apply();
+
+            UnityEngine.Experimental.Rendering.GraphicsFormat format_ = texture.graphicsFormat;
+            System.Byte[] dataTex = texture.GetRawTextureData();
 
             Thread t = new Thread(() => png(width, height, time, dataTex, format_));
             t.Start();
@@ -492,55 +530,61 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + frame.Timestamp * 100 + "0000.png",  bytes.ToArray());
             // StartCoroutine(png(width,height,frame));
 
-            
+
             //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" + _streamIndex.ToString() + "_" + Time.time.ToString() + ".png", frame.ColorFrame);
             //print(amound_of_images);
-            print(amound_of_images_l);
-            //print(amound_of_images_r);
-
-
-            //_height.Add(height);
-            //_width.Add(width);
-            if (lOrR == "right")
-            {
-                prev_time_r = frame.Timestamp;
-            }
-            else
-            {
-                prev_time_l = frame.Timestamp;
-            }
             
+
         }
         writer_l.Close();
         writer_r.Close();
 
-       /* if (amound_of_images_l / 1000 > amound_of_files_l)
-        {
-            amound_of_files_l++;
-            fileTimeNames_l = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_l_" + amound_of_files_l + ".csv";
-            print("reached first 1000");
-        }
+        /* if (amound_of_images_l / 1000 > amound_of_files_l)
+         {
+             amound_of_files_l++;
+             fileTimeNames_l = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_l_" + amound_of_files_l + ".csv";
+             print("reached first 1000");
+         }
 
-        if (amound_of_images_r / 1000 > amound_of_files_r)
-        {
-            amound_of_files_r++;
-            fileTimeNames_r = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_r_" + amound_of_files_r + ".csv";
-        }*/
+         if (amound_of_images_r / 1000 > amound_of_files_r)
+         {
+             amound_of_files_r++;
+             fileTimeNames_r = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/timeName_r_" + amound_of_files_r + ".csv";
+         }*/
     }
 
-   /*IEnumerator WaitToAvoidOverwritting()
+    /*IEnumerator WaitToAvoidOverwritting()
+     {
+         yield return new WaitForSeconds(1f);
+     }*/
+
+    public void invertImage(int width, int height, ref UnityEngine.Color[] pixels)
     {
-        yield return new WaitForSeconds(1f);
-    }*/
+        //NativeArray<byte> imageBytes2 = imageBytes;
+        Array.Reverse(pixels);
+        for (int row = 0; row < height; ++row)
+            Array.Reverse(pixels, row * width, width);
+        
+        for (int p = 0; p < pixels.Length; p++)
+        {
+            float alpha = pixels[p][3];
+            pixels[p][0] = alpha;
+            pixels[p][1] = alpha;
+            pixels[p][2] = alpha;
+            pixels[p][3] = 1;
+        }
+
+        // yield return null;
+    }
 
     public void png(uint width, uint height, double time, System.Byte[] imageBytes, UnityEngine.Experimental.Rendering.GraphicsFormat format_)
     {
         //NativeArray<byte> imageBytes2 = imageBytes;
-       
+        
         byte[] imag = ImageConversion.EncodeArrayToPNG(imageBytes, format_, width, height);
-        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name +"/" + _streamIndex.ToString() + "_" + time * 100 + "0000.png", imag);
+        File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/" + _streamIndex.ToString() + "_" + time * 100 + "0000.png", imag);
 
-       // yield return null;
+        // yield return null;
     }
 
     public void formate()
@@ -549,9 +593,9 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         Texture2D tex = new Texture2D(2, 2);
         byte[] data;
         byte[] imag;
-        string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name+"/";
+        string filePath = "C:/Users/pbottoni/Documents/BachelorThesis/TestImages/images" + time_name + "/";
         ulong lineCount_r = 0;
-        using (var reader = File.OpenText(filePath + "timeName_r"/*_+Mathf.Max(amound_of_files_r,amound_of_files_l)+*/+".csv"))
+        using (var reader = File.OpenText(filePath + "timeName_r"/*_+Mathf.Max(amound_of_files_r,amound_of_files_l)+*/+ ".csv"))
         {
             while (reader.ReadLine() != null)
             {
@@ -585,8 +629,8 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         //using (new avForThread(0, amound_of_images, 4, delegate (int start, int end)
         //  {
         //Parallel.For(0,amound_of_images,i=>
-        int amound_of_files=0;
-        for (int i = 0; i < (int)amound_of_images-2; i++)
+        int amound_of_files = 0;
+        for (int i = 0; i < (int)amound_of_images - 2; i++)
         {
             //print(i);
             //print("Start convert");
@@ -602,11 +646,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
             //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/" +img , imag);
             //string imag_save_name= File.ReadLines(filePath + "timeName_l.csv").Skip(i).First();
-            string imag_save_name = readLineAt(i, filePath + "timeName_l"/*+amound_of_files*/+".csv");
+            string imag_save_name = readLineAt(i, filePath + "timeName_l"/*+amound_of_files*/+ ".csv");
 
             if (_streamIndex == 2)
             {
-                img = readLineAt(i, filePath + "timeName_r"/* + amound_of_files + */+".csv");
+                img = readLineAt(i, filePath + "timeName_r"/* + amound_of_files + */+ ".csv");
                 //img = File.ReadLines(filePath + "timeName_r.csv").Skip(i).First();
             }
             else
@@ -614,14 +658,14 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 img = imag_save_name;
             }
 
-            
+
             //string imag_save_name = i;
             data = File.ReadAllBytes(filePath + img);
             //print(data.Length);
             FileUtil.DeleteFileOrDirectory(filePath + img);
 
-            
-           
+
+
             tex.LoadImage(data);
 
             int height = tex.height;
@@ -630,16 +674,16 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             UnityEngine.Color[] pixels = tex.GetPixels();
             Array.Reverse(pixels);
             for (int row = 0; row < height; ++row)
-                Array.Reverse(pixels,row * width, width);
+                Array.Reverse(pixels, row * width, width);
             if (_streamIndex == 1)
             {
-               writer_timestamp.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "\n");
+                writer_timestamp.Write(img.Remove(img.Length - 4, 4).Remove(0, 2) + "\n");
             }
             writer.Write(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
             //print(imag_save_name.Remove(imag_save_name.Length - 4, 4).Remove(0, 2) + "," + imag_save_name.Remove(0, 2) + "\n");
             //uint width = _width[i];
             //uint height = _height[i];
-            
+
             for (int p = 0; p < pixels.Length; p++)
             {
                 float alpha = pixels[p][3];
@@ -649,7 +693,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 pixels[p][3] = 1;
             }
             //print(pixels[5 * _height[50] + 80][0]);
-            
+
             //print(img);
             tex.SetPixels(pixels);
             //print(img);
@@ -659,7 +703,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
             File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages_nice/images" + time_name + "/" + lOrR + "/data/" + imag_save_name.Remove(0, 2), imag);
             //print(img);
-            
+
             /* System.Byte[] dataTex = tex.GetRawTextureData();
             UnityEngine.Experimental.Rendering.GraphicsFormat format_ = tex.graphicsFormat;
             string imageName = images_names[i];
@@ -674,11 +718,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             writer.Dispose();
             writer_timestamp.Dispose();
 
-           
+
         }
         //});
 
-        
+
 
         /* if (imu_.Count > 0 && _streamIndex == 1)
          {
@@ -716,7 +760,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     }
     public string readLineAt(int i, string path)
     {
-        
+
         int localI = 0;
         using (StreamReader sr = new StreamReader(path))
         {
@@ -730,10 +774,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 }
 
                 localI++;
-         
+
             }
         }
         return " ";
     }
-    
+
 }
+

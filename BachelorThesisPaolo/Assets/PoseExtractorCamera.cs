@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 
+//class not used anymore, but if only pose of camera is required -> use this and uncomment line 64
 public class PoseExtractorCamera : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -17,27 +18,19 @@ public class PoseExtractorCamera : MonoBehaviour
     public List<double> static_ = new List<double>();
     public List<string> time_ = new List<string>();
 
-
     void Start()
     {
-        //print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
-        //print("hello there");
         cameraT265 = GameObject.Find("Pose");
         filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
         filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_camera_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
         tw = new StreamWriter(filename, false);
         tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
         tw.Close();
-        
-        //tw2 = new StreamWriter(filenameTXT, false);
-        //tw2.WriteLine("# time x y z qx qy qz qw");
-        //tw2.Close();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
         time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
 
         cameraPos = cameraT265.transform.position;
@@ -51,7 +44,6 @@ public class PoseExtractorCamera : MonoBehaviour
         {
             static_.Add(cameraRot[i]);
         }
-        //time_.Add(Time.time.ToString());
 
         tw = new StreamWriter(filename, true);
         tw.WriteLine("Pose," + static_[0] + "," + static_[1] + "," + static_[2] + "," +
@@ -68,8 +60,7 @@ public class PoseExtractorCamera : MonoBehaviour
     }
 
     void OnApplicationQuit()
-    {
-        //print("done");
+    {   
         //WrtieCSV();
     }
 

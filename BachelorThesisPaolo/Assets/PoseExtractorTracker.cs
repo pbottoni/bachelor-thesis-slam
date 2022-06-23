@@ -4,7 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 
-
+//class not used anymore, but if only pose of camera is required -> use this and uncomment line 64
 public class PoseExtractorTracker : MonoBehaviour
 {
     // Start is called before the first frame update
@@ -26,25 +26,15 @@ public class PoseExtractorTracker : MonoBehaviour
         tw = new StreamWriter(filename, false);
         tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
         tw.Close();
-        
-        //tw2 = new StreamWriter(filenameTXT, false);
-        //tw2.WriteLine("# time x y z qx qy qz qw");
-        //tw2.Close();
     }
 
     // Update is called once per frame
     void Update()
     {
-        // pos = VivePose.GetPoseEx(TrackerRole.Tracker1).pos;
-
-        //rot = VivePose.GetPoseEx(TrackerRole.Tracker1).rot;
-        
         time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
 
         pos = tracker.transform.position;
         rot = tracker.transform.rotation;
-        //print(pos);
-        //print(rot);
 
         for (int i = 0; i < 3; i++)
         {
@@ -54,7 +44,7 @@ public class PoseExtractorTracker : MonoBehaviour
         {
             static_.Add(rot[i]);
         }
-        //print(Time.time.ToString());
+       
         tw = new StreamWriter(filename, true);
         tw.WriteLine("Pose," + static_[0] + "," + static_[1] + "," + static_[2] + "," +
                     static_[3] + "," + static_[4] + "," + static_[5] + "," + static_[6]);
@@ -71,7 +61,6 @@ public class PoseExtractorTracker : MonoBehaviour
 
     void OnApplicationQuit()
     {
-        //print("done");
        // WrtieCSV();
     }
 

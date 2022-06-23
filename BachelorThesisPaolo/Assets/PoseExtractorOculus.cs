@@ -4,6 +4,7 @@ using UnityEngine;
 using System.IO;
 using System;
 
+//class not used anymore, but if only pose of camera is required -> use this and uncomment line 66
 public class PoseExtractorOculus : MonoBehaviour
 {
     public GameObject centerEye;
@@ -20,29 +21,18 @@ public class PoseExtractorOculus : MonoBehaviour
     // Start is called before the first frame update
     public void Start()
     {
-        //print(System.DateTime.Now.ToString("yyyyMMdd_hhmmss"));
         centerEye = GameObject.Find("CenterEyeAnchor");
-        //rs = GameObject.FindObjectOfType<RsStreamTextureRenderer2>();
-        //print("hello there");
-        filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
+                filename = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".csv";
         filenameTXT = "C:/Users/pbottoni/Documents/BachelorThesis/TestCSV/test_oculus_" + System.DateTime.Now.ToString("yyyyMMdd_hhmmss") + ".txt";
         tw = new StreamWriter(filename, false);
         tw.WriteLine("Stream Type,x,y,z,rx,ry,rz,rw");
         tw.Close();
-        
-        //tw2 = new StreamWriter(filenameTXT, false);
-        //tw2.WriteLine("# time x y z qx qy qz qw");
-        //tw2.Close();
-
     }
-
 
     // Update is called once per frame
     public void update()
     {
-
         time_.Add(DateTimeOffset.Now.ToUnixTimeMilliseconds().ToString());
-
 
         headsetPos = centerEye.transform.position;
         headsetRot = centerEye.transform.rotation;
@@ -69,12 +59,10 @@ public class PoseExtractorOculus : MonoBehaviour
 
         static_.Clear();
         time_.Clear();
-        
     }
 
     public void OnApplicationQuit()
     {
-        //print("done");
         //WrtieCSV();
     }
 
@@ -110,6 +98,5 @@ public class PoseExtractorOculus : MonoBehaviour
             }
             tw2.Close();
         }
-
     }
 }

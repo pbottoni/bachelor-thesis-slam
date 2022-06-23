@@ -15,7 +15,7 @@ using System.Linq;
 using System.Text;
 
 
-public class RsStreamTextureRenderer2 : MonoBehaviour
+public class RsStreamTextureRenderer3 : MonoBehaviour
 {
     private static TextureFormat Convert(Format lrsFormat)
     {
@@ -116,7 +116,7 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     public string fileTimeNames_l = "";
     public string fileTimeNames_r = "";
     
-
+    int dummy=0;
     //to extract position of oculus
     public GameObject centerEye;
     public Vector3 headsetPos;
@@ -239,6 +239,8 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
 
     public void OnNewSample(Frame frame)
     {
+        Texture2D texture_try = new Texture2D(848, 800,TextureFormat.Alpha8,false,false);
+        byte[] letssee;
         try
         {
             if (frame.IsComposite)
@@ -246,6 +248,22 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
                 using (var fs = frame.As<FrameSet>())
                 using (var f = fs.FirstOrDefault(matcher))
                 {
+                    Debug.Log("hello");
+                    using (var image = fs.FirstOrDefault<Frame>(Intel.RealSense.Stream.Fisheye, Format.Y8).DisposeWith(fs)){
+                        letssee = Marshal.PtrToStructure<byte[]>(image.Data);
+                        //texture_try.LoadImage(image.Data);
+                        print(letssee[0]);         
+                        //texture_try.LoadRawTextureData(letssee);
+                        //texture_try.Apply();
+                        //texture_try=Texture2D.CreateExternalTexture(848, 800, TextureFormat.Alpha8,false,false,image.Data);
+                        //File.WriteAllBytes("C:/Users/pbottoni/Documents/BachelorThesis/TestImages/letsHope.png_"+dummy, texture_try.EncodeToPNG());
+                        dummy++;
+                        print(dummy);
+
+                    }
+                    
+
+
                     if (f != null)
                         q.Enqueue(f);
                     return;
@@ -259,6 +277,9 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
             {
                 q.Enqueue(frame);
             }
+
+           
+            
         }
         catch (Exception e)
         {
@@ -281,11 +302,11 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
         
         if (q != null)
         {
-            VideoFrame frame;
+            /*VideoFrame frame;
             if (q.PollForFrame<VideoFrame>(out frame))
                 using (frame)
                     ProcessFrame(frame);
-        }
+        */}
     }
 
     public void ProcessFrame(VideoFrame frame)
@@ -582,3 +603,4 @@ public class RsStreamTextureRenderer2 : MonoBehaviour
     }
     
 }
+
